@@ -1,20 +1,17 @@
 package com.example.demo.maper;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.example.demo.entity.DiaChi;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class NhanVienMaper {
-    private String name;
-    private String namsinh;
-    private String sdt;
-    private boolean gioitinh;
-    private String tinh;
-    private String xa;
-    private String huyen;
+import java.util.UUID;
+
+public interface NhanVienMaper {
+    UUID getId();
+    String getName();
+    String getNamSinh();
+    String getSdt();
+    Boolean getGioiTinh();
+    UUID getIdDiaChi();
+    String getTinh();
+    String getXa();
+    String getHuyen();
 }

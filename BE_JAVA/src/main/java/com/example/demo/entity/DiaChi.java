@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,13 +30,7 @@ public class DiaChi {
     private String huyen;
 
     @OneToMany(mappedBy = "diachi", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("diachi")
     private List<NhanVien> listNhanVien;
 
-    public DiaChi(UUID id, String tinh, String xa, String huyen) {
-        this.id = id;
-        this.tinh = tinh;
-        this.xa = xa;
-        this.huyen = huyen;
-        this.listNhanVien = listNhanVien;
-    }
 }

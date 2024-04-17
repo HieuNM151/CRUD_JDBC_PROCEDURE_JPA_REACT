@@ -1,37 +1,121 @@
 package com.example.demo.controller;
 
+
+import com.example.demo.entity.DiaChi;
 import com.example.demo.entity.NhanVien;
 import com.example.demo.maper.NhanVienMaper;
-import com.example.demo.service.NhanVienDAO;
+import com.example.demo.request.*;
+import com.example.demo.response.*;
+import com.example.demo.sevice.DiaChiService;
+import com.example.demo.sevice.NhanVienDAO;
+import com.example.demo.sevice.NhanVienService;
+import com.example.demo.sevice.impl.NhanVienImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/v1/nhan-vien")
 public class NhanVienController {
+    @Autowired
+    NhanVienService nhanVienService;
+
+    @Autowired
+    DiaChiService diaChiService;
+
     private NhanVienDAO nhanVienDAO;
 
     @Autowired
-    public NhanVienController(NhanVienDAO nhanVienDAO){
+    public NhanVienController(NhanVienDAO nhanVienDAO) {
         this.nhanVienDAO = nhanVienDAO;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<NhanVienMaper>> search(
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "sdt", required = false) String sdt,
-            @RequestParam(value = "huyen", required = false) String huyen,
-            @RequestParam(value = "namsinh", required = false) String namsinh
-    ){
-        List<NhanVienMaper> result = nhanVienDAO.search(name, sdt, huyen, namsinh);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    @PostMapping("/search-native")
+    public SearchResponse searchNhanVien(@RequestBody SearchRequest request) {
+        return nhanVienDAO.listdbbysearch(request);
     }
 
+    @PostMapping("/search-Specification")
+    public ResponseEntity<Page<QLNhanVienResponse>> getBook(@RequestBody NhanVienRequestSpecification request) {
+        return new ResponseEntity<>(nhanVienService.pagingBook(request), HttpStatus.OK);
+    }
+
+//    @PostMapping("/search-native")
+//    public ResponseEntity<List<NhanVienMaper>> getAll(@RequestBody NhanVienRequest request) {
+//        return new ResponseEntity<>(nhanVienService.getAll(request), HttpStatus.OK);
+//    }
+
+    @PostMapping("/search-procedure")
+    public ResponseEntity<List<QLNhanVienJDBC>> search(@RequestBody String jsonArray) {
+        List<QLNhanVienJDBC> result = nhanVienDAO.search(jsonArray);
+        return ResponseEntity.ok(result);
+    }
+
+
+    @GetMapping("/get-all")
+    public ResponseEntity<List<NhanVienResponse>> findAll(
+            @RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize
+    ) {
+        return new ResponseEntity<>(nhanVienService.find(pageNumber, pageSize), HttpStatus.OK);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<QLNhanVienResponse> createBook(@Valid @RequestBody CreateNhanVienRequest nhanVien) {
+        QLNhanVienResponse createdNhanVien = this.nhanVienService.create(nhanVien);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdNhanVien);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<QLNhanVienResponse> detailNhanVien(@RequestParam(name = "id") String id) {
+        return new ResponseEntity<>(nhanVienService.details(id), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<MessageResponse> delete(@PathVariable("id") UUID id) {
+        nhanVienService.delete(id);
+        return ResponseEntity.ok().body(MessageResponse.builder().message("Xóa thành công").build());
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<MessageResponse> updateKhachHang(
+            @RequestParam("nhanVienId") UUID nhanVienId,
+            @RequestBody CreateNhanVienRequest createNhanVienRequest) {
+        MessageResponse response = nhanVienService.updateNhanVien(nhanVienId, createNhanVienRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-dia-chi")
+    public List<DiaChiResponse> getAllDiaChi() {
+        return diaChiService.getAllDiaChi();
+    }
+//
+//    @PostMapping("create")
+//    public ResponseEntity<MessageResponse> createNhanVien(@RequestBody CreateNhanVienRequest createNhanVienRequest){
+//        return new ResponseEntity<>(nhanVienService.createNhanVien(createNhanVienRequest), HttpStatus.CREATED);
+//    }
+//
+//    @GetMapping("/detail")
+//    public ResponseEntity<QLNhanVienResponse> detailNhanVien(@RequestParam(name = "id")UUID id){
+//        return new ResponseEntity<>(nhanVienService.detailNhanVien(id), HttpStatus.OK);
+//    }
+//
+
+//
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<MessageResponse> delete(@PathVariable("id") UUID id) {
+//            nhanVienService.delete(id);
+//            return ResponseEntity.ok().body(MessageResponse.builder().message("Xóa thành công").build());
+//    }
 }
