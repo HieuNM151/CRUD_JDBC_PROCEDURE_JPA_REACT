@@ -154,7 +154,7 @@ public class NhanVienDAOImpl implements NhanVienDAO {
     @Override
     public SearchResponse listdbbysearch(SearchRequest searchRequest) {
         List<QLNhanVienNative> dbinvs = new ArrayList<>();
-        StringBuilder sqlstmt = new StringBuilder("SELECT nv.id, nv.name, nv.namsinh, nv.sdt, nv.gioitinh, dc.tinh, dc.xa, dc.huyen ");
+        StringBuilder sqlstmt = new StringBuilder("SELECT nv.id, nv.name, nv.namsinh, nv.sdt, nv.gioitinh, nv.trangthai, dc.tinh, dc.xa, dc.huyen ");
         sqlstmt.append("FROM ").append(searchRequest.getDatabase()).append(" nv ");
         sqlstmt.append("JOIN dia_chi dc ON nv.diachi = dc.id ");
         sqlstmt.append("WHERE 1=1 ");
@@ -176,6 +176,10 @@ public class NhanVienDAOImpl implements NhanVienDAO {
 
         if (searchRequest.getGioitinh() != null && !searchRequest.getGioitinh().isEmpty()) {
             sqlstmt.append("AND nv.gioitinh = ? ");
+        }
+
+        if (searchRequest.getTrangthai() != null && !searchRequest.getTrangthai().isEmpty()) {
+            sqlstmt.append("AND nv.trangthai = ? ");
         }
 
         // Phân trang
@@ -205,6 +209,10 @@ public class NhanVienDAOImpl implements NhanVienDAO {
                     preparedStatement.setString(index++, searchRequest.getGioitinh());
                 }
 
+                if (searchRequest.getTrangthai() != null && !searchRequest.getTrangthai().isEmpty()) {
+                    preparedStatement.setString(index++, searchRequest.getTrangthai());
+                }
+
                 // Tính vị trí bắt đầu của bản ghi
                 int offset = (searchRequest.getPage()) * searchRequest.getPageSize();
                 preparedStatement.setInt(index++, offset);
@@ -220,6 +228,7 @@ public class NhanVienDAOImpl implements NhanVienDAO {
                         nv.setNamsinh(rs.getDate("namsinh"));
                         nv.setSdt(rs.getString("sdt"));
                         nv.setGioitinh(rs.getBoolean("gioitinh"));
+                        nv.setTrangthai(rs.getBoolean("trangthai"));
                         nv.setTinh(rs.getString("tinh"));
                         nv.setXa(rs.getString("xa"));
                         nv.setHuyen(rs.getString("huyen"));

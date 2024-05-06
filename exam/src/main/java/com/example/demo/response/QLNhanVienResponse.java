@@ -18,7 +18,9 @@ public class QLNhanVienResponse {
     private String namsinh;
     private String sdt;
     private Boolean gioitinh;
+    private Boolean trangthai;
     private DiaChiResponse diachi;
     private List<LuongRepose> luongList;
+    private List<DuAnNhanVienResponse> listDANV;
     private long tongLuong;
 }

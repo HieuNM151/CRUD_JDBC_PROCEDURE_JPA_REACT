@@ -23,6 +23,9 @@ public class TaiKhoan {
     @Column(name = "matkhau")
     private String matkhau;
 
+    @Column(name = "email")
+    private String email;
+
     @Transient // Đánh dấu trường này không ánh xạ với cột trong database
     private UUID nhanvienId;
 

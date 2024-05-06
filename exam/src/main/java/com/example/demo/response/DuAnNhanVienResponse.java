@@ -12,14 +12,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-public class QLNhanVienNative {
+public class DuAnNhanVienResponse {
     private UUID id;
-    private String name;
-    private Date namsinh;
-    private String sdt;
-    private Boolean gioitinh;
+    private Date ngaythamgia;
+    private Date ngayketthuc;
     private Boolean trangthai;
-    private String tinh;
-    private String xa;
-    private String huyen;
+    private String tenduan;
 }

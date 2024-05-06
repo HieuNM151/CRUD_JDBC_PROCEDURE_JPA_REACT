@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,18 +19,31 @@ public class NhanVienDuAn {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "ngaythamgia")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "ngaythamgia", columnDefinition = "DATE_FORMAT('YYYY/MM/DD')")
     private Date ngaythamgia;
 
-    @Column(name = "ngayketthuc")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "ngayketthuc", columnDefinition = "DATE_FORMAT('YYYY/MM/DD')")
     private Date ngayketthuc;
+
+    @Column(name = "trangthai")
+    private Boolean trangthai;
+
+    @Transient
+    private UUID nhanvienId;
+
+    @Transient
+    private UUID duAnId;
 
     @ManyToOne
     @JoinColumn(name = "idnhanvien")
+    @JsonIgnore
     NhanVien nhanVien;
 
     @ManyToOne
     @JoinColumn(name = "idduan")
+    @JsonIgnore
     DuAn duAn;
 
 

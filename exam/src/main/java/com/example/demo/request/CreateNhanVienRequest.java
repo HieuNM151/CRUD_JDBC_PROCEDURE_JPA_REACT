@@ -17,8 +17,10 @@ public class CreateNhanVienRequest {
     private Date namsinh;
     private String sdt;
     private Boolean gioitinh;
+    private Boolean trangthai;
     private UUID diachi;
     private String taikhoan;
     private String matkhau;
+    private String email;
 
 }

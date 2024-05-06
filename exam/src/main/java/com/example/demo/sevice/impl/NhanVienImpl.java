@@ -15,24 +15,25 @@ import com.example.demo.request.CreateNhanVienRequest;
 import com.example.demo.request.NhanVienDetailRequest;
 import com.example.demo.request.NhanVienRequest;
 import com.example.demo.request.NhanVienRequestSpecification;
-import com.example.demo.response.LuongRepose;
-import com.example.demo.response.MessageResponse;
-import com.example.demo.response.NhanVienResponse;
-import com.example.demo.response.QLNhanVienResponse;
+import com.example.demo.response.*;
 import com.example.demo.sevice.NhanVienService;
 import com.example.demo.utils.MappingHelper;
+import com.example.demo.utils.SendConfirmationEmail;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.springframework.beans.support.PagedListHolder.DEFAULT_PAGE_SIZE;
 
@@ -50,6 +51,8 @@ public class NhanVienImpl implements NhanVienService {
     private final TaiKhoanRepo taiKhoanRepo;
 
     private final LuongRepo luongRepo;
+
+    private final JavaMailSender javaMailSender;
 
     @Override
     public Page<QLNhanVienResponse> pagingBook(NhanVienRequestSpecification requestSpecification) {
@@ -107,8 +110,8 @@ public class NhanVienImpl implements NhanVienService {
 
     @Override
     public List<NhanVienResponse> find(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
-        Page<NhanVienResponse> pageList= nhanVienRepository.fillAll(pageable);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<NhanVienResponse> pageList = nhanVienRepository.fillAll(pageable);
         return pageList.getContent();
     }
 
@@ -136,15 +139,13 @@ public class NhanVienImpl implements NhanVienService {
     }
 
 
-
-
 //    @Override
 //    public List<NhanVienMaper> search(String name, String sdt, String huyen, String namsinh) {
 //        return nhanVienRepository.search(name, sdt, huyen, namsinh);
 //    }
 
     @Override
-    public QLNhanVienResponse create(CreateNhanVienRequest nhanVienRequest) {
+    public QLNhanVienResponse create(CreateNhanVienRequest nhanVienRequest, boolean sendEmail) {
         NhanVien nv = mappingHelper.map(nhanVienRequest, NhanVien.class);
 
         // Tạo tài khoản mới
@@ -153,6 +154,7 @@ public class NhanVienImpl implements NhanVienService {
         String taikhoan = removeDiacriticsAndSpaces(nhanVienRequest.getName().toLowerCase());
         taiKhoan.setTaikhoan(taikhoan);
         taiKhoan.setMatkhau("123456");
+        taiKhoan.setEmail(nhanVienRequest.getEmail());
 
         Optional<DiaChi> diaChiOptional = diaChiRepo.findById(nhanVienRequest.getDiachi());
         if (diaChiOptional.isPresent()) {
@@ -171,7 +173,10 @@ public class NhanVienImpl implements NhanVienService {
 
         // Tạo một đối tượng QLNhanVienResponse từ đối tượng NhanVien đã lưu
         QLNhanVienResponse nvResponse = mappingHelper.map(nv, QLNhanVienResponse.class);
-
+        if (sendEmail) {
+            SendConfirmationEmail.sendConfirmationEmailStatic(taiKhoan.getEmail(), taiKhoan.getTaikhoan(), javaMailSender);
+            System.out.println("gửi mail");
+        }
         // Trả về đối tượng QLNhanVienResponse
         return nvResponse;
     }
@@ -216,33 +221,33 @@ public class NhanVienImpl implements NhanVienService {
             LuongRepose luongResponse = mappingHelper.map(luong, LuongRepose.class);
             luongResponses.add(luongResponse);
         }
-
+        // Load danh sách dự án nhân viên tham gia
+        List<DuAnNhanVienResponse> danhSachDuAnNhanVien = nhanVien.getNhanVienDuAnList().stream()
+                .map(nvda -> {
+                    DuAnNhanVienResponse duAnNhanVienResponse = new DuAnNhanVienResponse();
+                    duAnNhanVienResponse.setId(nvda.getId());
+                    duAnNhanVienResponse.setTenduan(nvda.getDuAn().getTenduan());
+                    duAnNhanVienResponse.setNgaythamgia(nvda.getNgaythamgia());
+                    duAnNhanVienResponse.setNgayketthuc(nvda.getNgayketthuc());
+                    duAnNhanVienResponse.setTrangthai(nvda.getTrangthai());
+                    return duAnNhanVienResponse;
+                })
+                .collect(Collectors.toList());
         // Tạo đối tượng QLNhanVienResponse và đặt thông tin vào đó
         QLNhanVienResponse response = mappingHelper.map(nhanVien, QLNhanVienResponse.class);
         response.setLuongList(luongResponses);
         response.setTongLuong(tongLuong); // Đặt tổng lương vào đối tượng response
-
+        response.setListDANV(danhSachDuAnNhanVien); // Đặt danh sách dự án nhân viên vào đối tượng response
         return response;
     }
-
-
-
 
     @Override
     public MessageResponse delete(UUID id) {
         Optional<NhanVien> optionalNhanVien = nhanVienRepository.findById(id);
         if (optionalNhanVien.isPresent()) {
             NhanVien nhanVien = optionalNhanVien.get();
-            // Lấy tài khoản của nhân viên
-            TaiKhoan taiKhoan = taiKhoanRepo.findByNhanVien(nhanVien);
-            // Kiểm tra xem có tài khoản không
-            if (taiKhoan != null) {
-                // Xóa tài khoản của nhân viên
-                taiKhoanRepo.delete(taiKhoan);
-            }
-
-            // Xóa nhân viên
-            nhanVienRepository.delete(nhanVien);
+            nhanVien.setTrangthai(false);
+            nhanVienRepository.save(nhanVien);
 
             return MessageResponse.builder().message("Xóa thành công").build();
         } else {
@@ -259,6 +264,7 @@ public class NhanVienImpl implements NhanVienService {
             nhanVien.setName(createNhanVienRequest.getName());
             nhanVien.setSdt(createNhanVienRequest.getSdt());
             nhanVien.setGioitinh(createNhanVienRequest.getGioitinh());
+            nhanVien.setTrangthai(createNhanVienRequest.getTrangthai());
             nhanVien.setNamsinh(createNhanVienRequest.getNamsinh());
 
             if (createNhanVienRequest.getDiachi() != null) {

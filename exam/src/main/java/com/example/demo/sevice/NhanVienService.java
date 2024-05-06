@@ -27,7 +27,7 @@ public interface NhanVienService {
 //    List<NhanVienMaper> search(String name, String sdt, String huyen, String namsinh);
 
 
-    QLNhanVienResponse create(CreateNhanVienRequest nhanVien);
+    QLNhanVienResponse create(CreateNhanVienRequest nhanVien, boolean sendEmail);
 
     QLNhanVienResponse details(String id);
 

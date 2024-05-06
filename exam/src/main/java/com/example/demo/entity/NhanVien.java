@@ -36,6 +36,9 @@ public class NhanVien {
     @Column(name = "gioitinh")
     private Boolean gioitinh;
 
+    @Column(name = "trangthai")
+    private Boolean trangthai;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diachi")
     @JsonIgnore
@@ -46,6 +49,7 @@ public class NhanVien {
     private List<Luong> luongList;
 
     @OneToMany(mappedBy = "nhanVien", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<NhanVienDuAn> nhanVienDuAnList;
 
 }

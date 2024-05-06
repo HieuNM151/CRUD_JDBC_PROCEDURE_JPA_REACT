@@ -73,7 +73,7 @@ public class NhanVienController {
 
     @PostMapping("/create")
     public ResponseEntity<QLNhanVienResponse> createBook(@Valid @RequestBody CreateNhanVienRequest nhanVien) {
-        QLNhanVienResponse createdNhanVien = this.nhanVienService.create(nhanVien);
+        QLNhanVienResponse createdNhanVien = this.nhanVienService.create(nhanVien, true);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdNhanVien);
     }
 
@@ -82,7 +82,7 @@ public class NhanVienController {
         return new ResponseEntity<>(nhanVienService.details(id), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public ResponseEntity<MessageResponse> delete(@PathVariable("id") UUID id) {
         nhanVienService.delete(id);
         return ResponseEntity.ok().body(MessageResponse.builder().message("Xóa thành công").build());

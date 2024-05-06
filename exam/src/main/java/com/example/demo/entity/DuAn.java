@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,13 +24,19 @@ public class DuAn {
     @Column(name = "tenduan")
     private String tenduan;
 
-    @Column(name = "ngaybatdau")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "ngaybatdau", columnDefinition = "DATE_FORMAT('YYYY/MM/DD')")
     private Date ngaybatdau;
 
-    @Column(name = "ngayketthuc")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "ngayketthuc", columnDefinition = "DATE_FORMAT('YYYY/MM/DD')")
     private Date ngayketthuc;
 
+    @Column(name = "trangthai")
+    private Boolean trangthai;
+
     @OneToMany(mappedBy = "duAn", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("duAn")
     private List<NhanVienDuAn> nhanVienDuAnList;
 
 

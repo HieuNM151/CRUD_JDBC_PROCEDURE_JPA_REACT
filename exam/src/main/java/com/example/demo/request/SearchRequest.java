@@ -16,6 +16,7 @@ public class SearchRequest {
     private Date namsinh;
     private String sdt;
     private String gioitinh;
+    private String trangthai;
     private Date ngayBatDau;
     private Date ngayKetThuc;
     private String database;

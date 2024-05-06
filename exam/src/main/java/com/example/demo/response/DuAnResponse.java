@@ -6,20 +6,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class QLNhanVienNative {
+public class DuAnResponse {
+
     private UUID id;
-    private String name;
-    private Date namsinh;
-    private String sdt;
-    private Boolean gioitinh;
+    private String tenduan;
+    private Date ngaybatdau;
+    private Date ngayketthuc;
     private Boolean trangthai;
-    private String tinh;
-    private String xa;
-    private String huyen;
+    private List<NhanVienDuAnResponse> listNVDA;
+
 }
