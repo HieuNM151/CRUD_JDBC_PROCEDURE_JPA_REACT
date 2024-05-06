@@ -35,7 +35,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.springframework.beans.support.PagedListHolder.DEFAULT_PAGE_SIZE;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +52,9 @@ public class NhanVienImpl implements NhanVienService {
     private final LuongRepo luongRepo;
 
     private final JavaMailSender javaMailSender;
+
+    private final SendConfirmationEmail sendConfirmationEmail;
+
 
     @Override
     public Page<QLNhanVienResponse> pagingBook(NhanVienRequestSpecification requestSpecification) {
@@ -82,9 +84,6 @@ public class NhanVienImpl implements NhanVienService {
         Pageable pageable = PageRequest.of(requestSpecification.getPageable(), requestSpecification.getPageSize());
 
         Page<NhanVien> page = nhanVienRepository.findAll(spec, pageable).map(nhanVien -> {
-//            if (nhanVien.getDiachi() != null)
-//                nhanVien.setDiachi(new DiaChi(nhanVien.getDiachi().getId(), nhanVien.getDiachi().getTinh(),
-//                        nhanVien.getDiachi().getXa(), nhanVien.getDiachi().getHuyen()));
             return nhanVien;
         });
         return page.map(nhanVien -> {
@@ -138,12 +137,6 @@ public class NhanVienImpl implements NhanVienService {
         }
     }
 
-
-//    @Override
-//    public List<NhanVienMaper> search(String name, String sdt, String huyen, String namsinh) {
-//        return nhanVienRepository.search(name, sdt, huyen, namsinh);
-//    }
-
     @Override
     public QLNhanVienResponse create(CreateNhanVienRequest nhanVienRequest, boolean sendEmail) {
         NhanVien nv = mappingHelper.map(nhanVienRequest, NhanVien.class);
@@ -174,7 +167,7 @@ public class NhanVienImpl implements NhanVienService {
         // Tạo một đối tượng QLNhanVienResponse từ đối tượng NhanVien đã lưu
         QLNhanVienResponse nvResponse = mappingHelper.map(nv, QLNhanVienResponse.class);
         if (sendEmail) {
-            SendConfirmationEmail.sendConfirmationEmailStatic(taiKhoan.getEmail(), taiKhoan.getTaikhoan(), javaMailSender);
+            sendConfirmationEmail.sendConfirmationEmailStatic(taiKhoan.getEmail(), taiKhoan.getTaikhoan(), javaMailSender);
             System.out.println("gửi mail");
         }
         // Trả về đối tượng QLNhanVienResponse
@@ -284,54 +277,6 @@ public class NhanVienImpl implements NhanVienService {
             throw new NotFondException("Không tìm thấy nhân viên với ID: ");
         }
     }
-
-//    private final NhanVienRepo nhanVienRepo;
-//
-//    private final DiaChiRepo diaChiRepo;
-//
-//    private final MappingHelper mappingHelper;
-//
-//    @Override
-//    public List<QLNhanVienResponse> getAll(String name, String sdt, Boolean gioitinh, Integer pageNumber, Integer pageSize) {
-//        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-//        Page<QLNhanVienResponse> pageList = nhanVienRepo.getALL(name, sdt, gioitinh, pageable);
-//        return pageList.getContent();
-//        return  null;
-//    }
-//
-//    @Override
-//    public MessageResponse createNhanVien(CreateNhanVienRequest createNhanVienRequest) {
-//        if (createNhanVienRequest.getIdDiaChi() == null) throw new NotFondException("ID địa chỉ là bắt buộc");
-//        DiaChi diaChi = null;
-//        Optional<DiaChi> diaChiOptional = diaChiRepo.findById(createNhanVienRequest.getIdDiaChi());
-//        if (diaChiOptional.isPresent()) diaChi = diaChiOptional.get();
-//        else throw new NotFondException("Địa chỉ không tồn tại trên DB");
-//        NhanVien nhanVien = new NhanVien();
-//        nhanVien = mappingHelper.map(createNhanVienRequest, NhanVien.class);
-//        nhanVien.setId(UUID.randomUUID());
-//
-//        nhanVien.setDiachi(diaChi);
-//        nhanVienRepo.save(nhanVien);
-//        return MessageResponse.builder().message("Thêm thành công").build();
-//    }
-//
-//    @Override
-//    public QLNhanVienResponse detailNhanVien(UUID id) {
-//        return nhanVienRepo.detailNhanVien(id);
-//        return null;
-//    }
-
-//
-//
-//    @Override
-//    public MessageResponse delete(UUID id) {
-//        if (nhanVienRepo.existsById(id)) {
-//            nhanVienRepo.deleteById(id);
-//            return MessageResponse.builder().message("Xóa thành công").build();
-//        } else {
-//            return MessageResponse.builder().message("Không tìm thấy nhân viên với id: " + id).build();
-//        }
-//    }
 
 
 }

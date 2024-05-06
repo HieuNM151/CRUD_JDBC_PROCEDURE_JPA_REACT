@@ -5,10 +5,14 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
+@Service
 public class SendConfirmationEmail {
 
-    public static void sendConfirmationEmailStatic(String email, String taikhoan, JavaMailSender mailSender) {
+    @Async("taskExecutor")
+    public void sendConfirmationEmailStatic(String email, String taikhoan, JavaMailSender mailSender) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
         SimpleMailMessage message = new SimpleMailMessage();
