@@ -10,6 +10,8 @@ import com.example.demo.sevice.DiaChiService;
 import com.example.demo.sevice.NhanVienDAO;
 import com.example.demo.sevice.NhanVienService;
 import com.example.demo.sevice.impl.NhanVienImpl;
+import com.example.demo.utils.ExcelGenerator;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -100,6 +105,22 @@ public class NhanVienController {
     public List<DiaChiResponse> getAllDiaChi() {
         return diaChiService.getAllDiaChi();
     }
+
+    @GetMapping("/export-to-excel")
+    public void exportIntoExcelFile(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=NhanVien" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        List<NhanVien> nhanVienList = nhanVienService.findAll();
+        ExcelGenerator generator = new ExcelGenerator(nhanVienList);
+        generator.generateExcelFile(response);
+    }
+
 //
 //    @PostMapping("create")
 //    public ResponseEntity<MessageResponse> createNhanVien(@RequestBody CreateNhanVienRequest createNhanVienRequest){

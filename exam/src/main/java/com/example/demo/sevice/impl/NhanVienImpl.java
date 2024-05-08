@@ -108,6 +108,12 @@ public class NhanVienImpl implements NhanVienService {
     }
 
     @Override
+    public List<NhanVien> findAll() {
+        List<NhanVien> nhanVienList = nhanVienRepository.findAll();
+        return nhanVienList;
+    }
+
+    @Override
     public List<NhanVienResponse> find(Integer pageNumber, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<NhanVienResponse> pageList = nhanVienRepository.fillAll(pageable);

@@ -33,6 +33,8 @@ public interface NhanVienService {
 
     MessageResponse delete(UUID id);
 
+    List<NhanVien> findAll();
+
     MessageResponse updateNhanVien(UUID nhanVienid, CreateNhanVienRequest createNhanVienRequest);
 
     List<NhanVienMaper> getAll(NhanVienRequest nhanVienRequest);
