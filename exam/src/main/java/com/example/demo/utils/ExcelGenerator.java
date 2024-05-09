@@ -36,7 +36,7 @@ public class ExcelGenerator {
         style.setFont(font);
         createCell(row, 0, "STT", style); // Add "STT" column
         createCell(row, 1, "ID", style);
-        createCell(row, 2, "Name", style);
+        createCell(row, 2, "Tên nhân viên", style);
         createCell(row, 3, "Năm sinh", style);
         createCell(row, 4, "SĐT", style);
         createCell(row, 5, "Giới tính", style);

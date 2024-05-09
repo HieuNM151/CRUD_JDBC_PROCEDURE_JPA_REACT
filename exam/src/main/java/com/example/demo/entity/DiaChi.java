@@ -33,4 +33,11 @@ public class DiaChi {
     @JsonIgnoreProperties("diachi")
     private List<NhanVien> listNhanVien;
 
+    @Override
+    public String toString() {
+        return "DiaChi{" +
+                "id=" + id +
+                // Avoid printing any NhanVien field here
+                '}';
+    }
 }

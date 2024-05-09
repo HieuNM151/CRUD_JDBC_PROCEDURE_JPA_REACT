@@ -17,6 +17,7 @@ import com.example.demo.request.NhanVienRequest;
 import com.example.demo.request.NhanVienRequestSpecification;
 import com.example.demo.response.*;
 import com.example.demo.sevice.NhanVienService;
+import com.example.demo.utils.ExcelUtility;
 import com.example.demo.utils.MappingHelper;
 import com.example.demo.utils.SendConfirmationEmail;
 import jakarta.persistence.criteria.Predicate;
@@ -29,7 +30,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -89,6 +92,44 @@ public class NhanVienImpl implements NhanVienService {
         return page.map(nhanVien -> {
             return mappingHelper.map(nhanVien, QLNhanVienResponse.class);
         });
+    }
+
+    @Override
+    public void save(MultipartFile file, boolean sendEmail) {
+        try {
+            List<CreateNhanVienRequest> nhanVienRequestList = ExcelUtility.excelToNhanVien(file.getInputStream());
+            System.out.println("Read from Excel: " + nhanVienRequestList); // Log data read from Excel
+
+            List<NhanVien> nhanVienList = nhanVienRequestList.stream()
+                    .map(request -> {
+                        NhanVien nhanVien = mappingHelper.map(request, NhanVien.class);
+                        Optional<DiaChi> diaChiOptional = diaChiRepo.findById(request.getDiachi());
+                        if (diaChiOptional.isPresent()) {
+                            nhanVien.setDiachi(diaChiOptional.get());
+                        } else {
+                            throw new NotFondException("Không tìm thấy địa chỉ với ID đã cung cấp: ");
+                        }
+                        // Lưu NhanVien trước
+                        nhanVien = nhanVienRepository.save(nhanVien);
+                        // Tạo tài khoản mới
+                        TaiKhoan taiKhoan = new TaiKhoan();
+                        taiKhoan.setNhanVien(nhanVien);
+                        String taikhoan = removeDiacriticsAndSpaces(request.getName().toLowerCase());
+                        taiKhoan.setTaikhoan(taikhoan);
+                        taiKhoan.setMatkhau("123456");
+                        taiKhoan.setEmail(request.getEmail());
+                        taiKhoanRepo.save(taiKhoan);
+                        System.out.println("Converted to NhanVien: " + nhanVien); // Log each NhanVien after conversion
+                        if (sendEmail) {
+                            sendConfirmationEmail.sendConfirmationEmailStatic(taiKhoan.getEmail(), taiKhoan.getTaikhoan(), javaMailSender);
+                            System.out.println("gửi mail");
+                        }
+                        return nhanVien;
+                    })
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("fail to store excel data: " + e.getMessage());
+        }
     }
 
     @Override

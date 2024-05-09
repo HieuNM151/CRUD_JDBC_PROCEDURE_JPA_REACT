@@ -11,6 +11,7 @@ import com.example.demo.sevice.NhanVienDAO;
 import com.example.demo.sevice.NhanVienService;
 import com.example.demo.sevice.impl.NhanVienImpl;
 import com.example.demo.utils.ExcelGenerator;
+import com.example.demo.utils.ExcelUtility;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -56,10 +58,7 @@ public class NhanVienController {
         return new ResponseEntity<>(nhanVienService.pagingBook(request), HttpStatus.OK);
     }
 
-//    @PostMapping("/search-native")
-//    public ResponseEntity<List<NhanVienMaper>> getAll(@RequestBody NhanVienRequest request) {
-//        return new ResponseEntity<>(nhanVienService.getAll(request), HttpStatus.OK);
-//    }
+
 
     @PostMapping("/search-procedure")
     public ResponseEntity<List<QLNhanVienJDBC>> search(@RequestBody String jsonArray) {
@@ -121,22 +120,17 @@ public class NhanVienController {
         generator.generateExcelFile(response);
     }
 
-//
-//    @PostMapping("create")
-//    public ResponseEntity<MessageResponse> createNhanVien(@RequestBody CreateNhanVienRequest createNhanVienRequest){
-//        return new ResponseEntity<>(nhanVienService.createNhanVien(createNhanVienRequest), HttpStatus.CREATED);
-//    }
-//
-//    @GetMapping("/detail")
-//    public ResponseEntity<QLNhanVienResponse> detailNhanVien(@RequestParam(name = "id")UUID id){
-//        return new ResponseEntity<>(nhanVienService.detailNhanVien(id), HttpStatus.OK);
-//    }
-//
-
-//
-//    @DeleteMapping("/delete/{id}")
-//    public ResponseEntity<MessageResponse> delete(@PathVariable("id") UUID id) {
-//            nhanVienService.delete(id);
-//            return ResponseEntity.ok().body(MessageResponse.builder().message("Xóa thành công").build());
-//    }
+    @PostMapping("/excel/upload")
+    public ResponseEntity<String> handleFileUpload(@RequestPart("file") MultipartFile file) {
+        String message = "";
+        try {
+            nhanVienService.save(file, true);
+            message = "Uploaded the file successfully: " + file.getOriginalFilename();
+            return ResponseEntity.status(HttpStatus.OK).body(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+            message = "Could not upload the file: " + e.getMessage()+ "!";
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);
+        }
+    }
 }

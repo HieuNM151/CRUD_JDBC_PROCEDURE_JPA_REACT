@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
@@ -26,6 +27,7 @@ public interface NhanVienService {
 
 //    List<NhanVienMaper> search(String name, String sdt, String huyen, String namsinh);
 
+    void save(MultipartFile file, boolean sendEmail);
 
     QLNhanVienResponse create(CreateNhanVienRequest nhanVien, boolean sendEmail);
 
