@@ -58,8 +58,6 @@ public class NhanVienController {
         return new ResponseEntity<>(nhanVienService.pagingBook(request), HttpStatus.OK);
     }
 
-
-
     @PostMapping("/search-procedure")
     public ResponseEntity<List<QLNhanVienJDBC>> search(@RequestBody String jsonArray) {
         List<QLNhanVienJDBC> result = nhanVienDAO.search(jsonArray);

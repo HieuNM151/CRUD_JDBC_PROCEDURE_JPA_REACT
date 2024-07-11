@@ -45,7 +45,7 @@ public class DuAnController {
             return new ResponseEntity<>(duAnResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<MessageResponse> delete (@PathVariable("id") UUID id) {
         duAnService.delete(id);
         return ResponseEntity.ok().body(MessageResponse.builder().message("Xóa thành công").build());
